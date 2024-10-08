@@ -18,6 +18,20 @@ Namespace Imaging
             End Get
         End Property
 
+        Public ReadOnly Property PathPoints As PointF()
+            Get
+                Throw New NotImplementedException
+            End Get
+        End Property
+
+        Sub New()
+        End Sub
+
+        Sub New(points As IEnumerable(Of PointF))
+            Call AddPolygon(points.ToArray)
+            Call CloseAllFigures()
+        End Sub
+
         Public MustInherit Class op
 
         End Class
