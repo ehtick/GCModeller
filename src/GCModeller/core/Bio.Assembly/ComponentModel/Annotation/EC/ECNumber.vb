@@ -127,28 +127,36 @@ Namespace ComponentModel.Annotation
                 Return False
             End If
 
-            If Type <> ec.Type Then
+            ' 第一级比较
+            If type <> ec.type Then
                 Return False
             End If
 
-            If SubType = 0 Then
+            ' 第二级比较
+            ' 如果当前是0（通配符），则包含所有；如果不一致则False；一致则继续
+            If subType = 0 Then
                 Return True
-            ElseIf SubType <> ec.SubType Then
+            ElseIf subType <> ec.subType Then
                 Return False
             End If
 
-            If SubCategory = 0 Then
+            ' 第三级比较
+            If subCategory = 0 Then
                 Return True
-            ElseIf SubCategory <> ec.SubCategory Then
+            ElseIf subCategory <> ec.subCategory Then
                 Return False
             End If
 
-            If SerialNumber = 0 Then
+            ' 第四级比较
+            ' 如果当前是0（通配符），则包含所有
+            If serialNumber = 0 Then
                 Return True
-            ElseIf SerialNumber = ec.SerialNumber Then
+                ' 如果当前不为0，必须相等才算包含
+            ElseIf serialNumber <> ec.serialNumber Then
                 Return False
             End If
 
+            ' 全部匹配，返回 True
             Return True
         End Function
 
