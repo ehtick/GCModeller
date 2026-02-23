@@ -6,12 +6,35 @@ Imports SMRUCC.genomics.ComponentModel.Annotation
 
 Namespace Pipeline
 
+    ''' <summary>
+    ''' 基因组代谢酶注释结果
+    ''' </summary>
     Public Class GenomeVector : Implements INamedValue
 
+        ''' <summary>
+        ''' the unique reference id of the genome, usually is the genbank assembly id, but it can be any string that can uniquely 
+        ''' identify this genome in the dataset, and it should be consistent with the assembly id used in the annotation result, 
+        ''' so that we can link the annotation result to the taxonomy information of this genome
+        ''' </summary>
+        ''' <returns></returns>
         Public Property assembly_id As String Implements INamedValue.Key
+        ''' <summary>
+        ''' the genome taxonomy information, it can be the taxonomic name of this genome, or the taxonomic id of this genome, 
+        ''' but it should be consistent with the taxonomy information used in the annotation result, so that we can link the 
+        ''' annotation result to the taxonomy information of this genome
+        ''' </summary>
+        ''' <returns></returns>
         Public Property taxonomy As String
+        ''' <summary>
+        ''' annotated terms inside this genome, the key is the term name, and the value is the count of this term in this genome
+        ''' </summary>
+        ''' <returns></returns>
         Public Property terms As Dictionary(Of String, Integer)
 
+        ''' <summary>
+        ''' annotated gene count
+        ''' </summary>
+        ''' <returns></returns>
         Public ReadOnly Property size As Integer
             Get
                 If terms Is Nothing Then
@@ -22,10 +45,10 @@ Namespace Pipeline
             End Get
         End Property
 
-        Public Overrides Function ToString() As String
-            Return taxonomy
-        End Function
-
+        ''' <summary>
+        ''' used for processing of the ec number terms, make the count of the hierarchical ec number terms by summing the count of the specific ec number terms
+        ''' </summary>
+        ''' <returns></returns>
         Public Function GetHierarchicalECNumberTerms() As Dictionary(Of String, Integer)
             Dim hierarchical As New Dictionary(Of String, Integer)
 
@@ -42,6 +65,10 @@ Namespace Pipeline
             Next
 
             Return hierarchical
+        End Function
+
+        Public Overrides Function ToString() As String
+            Return taxonomy
         End Function
 
         Private Shared Function groupByAssembly(terms As IEnumerable(Of RankTerm)) As IEnumerable(Of NamedCollection(Of RankTerm))
