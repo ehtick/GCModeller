@@ -1,6 +1,7 @@
 ﻿Imports Microsoft.VisualBasic.ComponentModel.Collection
 Imports Microsoft.VisualBasic.ComponentModel.Collection.Generic
 Imports Microsoft.VisualBasic.ComponentModel.DataSourceModel
+Imports Microsoft.VisualBasic.Linq
 
 Namespace Pipeline
 
@@ -22,6 +23,21 @@ Namespace Pipeline
 
         Public Overrides Function ToString() As String
             Return taxonomy
+        End Function
+
+        Public Function GetHierarchicalECNumberTerms() As Dictionary(Of String, Integer)
+            Dim hierarchical As New Dictionary(Of String, Integer)
+
+            For Each ec_number As KeyValuePair(Of String, Integer) In terms.SafeQuery
+                Dim split As String() = ec_number.Key.Split("."c)
+
+                hierarchical(ec_number.Key) = ec_number.Value
+                hierarchical("EC_class:" & split(0)) += ec_number.Value
+                hierarchical("EC_subclass:" & split(0) & "." & split(1)) += ec_number.Value
+                hierarchical("EC_subcategory:" & split(0) & "." & split(1) & "." & split(2)) += ec_number.Value
+            Next
+
+            Return hierarchical
         End Function
 
         Private Shared Function groupByAssembly(terms As IEnumerable(Of RankTerm)) As IEnumerable(Of NamedCollection(Of RankTerm))

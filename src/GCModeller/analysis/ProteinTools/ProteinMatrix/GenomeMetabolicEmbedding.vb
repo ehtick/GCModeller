@@ -6,9 +6,19 @@ Public Class GenomeMetabolicEmbedding
 
     ReadOnly vec As New TFIDF
     ReadOnly taxonomy As New Dictionary(Of String, String)
+    ReadOnly hierarchical As Boolean = False
+
+    Sub New(Optional hierarchical As Boolean = False)
+        Me.hierarchical = hierarchical
+    End Sub
 
     Public Sub Add(genome As GenomeVector)
-        Call vec.Add(genome.assembly_id, genome.terms)
+        If hierarchical Then
+            Call vec.Add(genome.assembly_id, genome.GetHierarchicalECNumberTerms)
+        Else
+            Call vec.Add(genome.assembly_id, genome.terms)
+        End If
+
         Call taxonomy.Add(genome.assembly_id, genome.taxonomy)
     End Sub
 
