@@ -2,6 +2,7 @@
 Imports Microsoft.VisualBasic.ComponentModel.Collection.Generic
 Imports Microsoft.VisualBasic.ComponentModel.DataSourceModel
 Imports Microsoft.VisualBasic.Linq
+Imports SMRUCC.genomics.ComponentModel.Annotation
 
 Namespace Pipeline
 
@@ -29,33 +30,15 @@ Namespace Pipeline
             Dim hierarchical As New Dictionary(Of String, Integer)
 
             For Each ec_number As KeyValuePair(Of String, Integer) In terms.SafeQuery
-                Dim split As String() = ec_number.Key.Split("."c)
-                Dim key1 = "EC_class:" & split(0)
-                Dim key2 = "EC_subclass:" & split(0) & "." & split(1)
-                Dim key3 = "EC_subcategory:" & split(0) & "." & split(1) & "." & split(2)
+                Dim ec As ECNumber = ECNumber.ValueParser(ec_number.Key)
 
-                hierarchical(ec_number.Key) = ec_number.Value
-
-                ' main class level
-                If Not hierarchical.ContainsKey(key1) Then
-                    hierarchical(key1) = ec_number.Value
-                Else
-                    hierarchical(key1) += ec_number.Value
-                End If
-
-                ' subclass level
-                If Not hierarchical.ContainsKey(key2) Then
-                    hierarchical(key2) = ec_number.Value
-                Else
-                    hierarchical(key2) += ec_number.Value
-                End If
-
-                ' subcategory level
-                If Not hierarchical.ContainsKey(key3) Then
-                    hierarchical(key3) = ec_number.Value
-                Else
-                    hierarchical(key3) += ec_number.Value
-                End If
+                For Each ec_term As String In ec.HierarchicalECTerms
+                    If Not hierarchical.ContainsKey(ec_term) Then
+                        hierarchical(ec_term) = ec_number.Value
+                    Else
+                        hierarchical(ec_term) += ec_number.Value
+                    End If
+                Next
             Next
 
             Return hierarchical
