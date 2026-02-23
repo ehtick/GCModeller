@@ -106,6 +106,17 @@ Namespace ComponentModel.Annotation
             End Get
         End Property
 
+        Public Function HierarchicalECTerms() As IEnumerable(Of String)
+            Return InternalHierarchicalECTerms.Distinct
+        End Function
+
+        Private Iterator Function InternalHierarchicalECTerms() As IEnumerable(Of String)
+            Yield $"{CInt(type)}.-.-.-"
+            Yield $"{CInt(type)}.{If(subType = 0, "-", subType)}.-.-"
+            Yield $"{CInt(type)}.{If(subType = 0, "-", subType)}.{If(subCategory = 0, "-", subCategory)}.-"
+            Yield $"{CInt(type)}.{If(subType = 0, "-", subType)}.{If(subCategory = 0, "-", subCategory)}.{If(serialNumber = 0, "-", serialNumber)}"
+        End Function
+
         Public Function Contains(ec As String) As Boolean
             Static parserCache As New Dictionary(Of String, ECNumber)
 
