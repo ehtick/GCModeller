@@ -30,11 +30,32 @@ Namespace Pipeline
 
             For Each ec_number As KeyValuePair(Of String, Integer) In terms.SafeQuery
                 Dim split As String() = ec_number.Key.Split("."c)
+                Dim key1 = "EC_class:" & split(0)
+                Dim key2 = "EC_subclass:" & split(0) & "." & split(1)
+                Dim key3 = "EC_subcategory:" & split(0) & "." & split(1) & "." & split(2)
 
                 hierarchical(ec_number.Key) = ec_number.Value
-                hierarchical("EC_class:" & split(0)) += ec_number.Value
-                hierarchical("EC_subclass:" & split(0) & "." & split(1)) += ec_number.Value
-                hierarchical("EC_subcategory:" & split(0) & "." & split(1) & "." & split(2)) += ec_number.Value
+
+                ' main class level
+                If Not hierarchical.ContainsKey(key1) Then
+                    hierarchical(key1) = ec_number.Value
+                Else
+                    hierarchical(key1) += ec_number.Value
+                End If
+
+                ' subclass level
+                If Not hierarchical.ContainsKey(key2) Then
+                    hierarchical(key2) = ec_number.Value
+                Else
+                    hierarchical(key2) += ec_number.Value
+                End If
+
+                ' subcategory level
+                If Not hierarchical.ContainsKey(key3) Then
+                    hierarchical(key3) = ec_number.Value
+                Else
+                    hierarchical(key3) += ec_number.Value
+                End If
             Next
 
             Return hierarchical
