@@ -126,11 +126,13 @@ declare namespace annotation.terms {
      * + default value Is ``false``.
      * @param union_contigs 
      * + default value Is ``1000``.
+     * @param hierarchical 
+     * + default value Is ``false``.
      * @param env -
      * 
      * + default value Is ``null``.
    */
-   function tfidf_vectorizer(annotations: any, L2_norm?: boolean, union_contigs?: object, env?: object): any;
+   function tfidf_vectorizer(annotations: any, L2_norm?: boolean, union_contigs?: object, hierarchical?: boolean, env?: object): any;
    module write {
       /**
       */
