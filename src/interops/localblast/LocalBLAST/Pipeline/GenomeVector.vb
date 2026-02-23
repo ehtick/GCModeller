@@ -46,7 +46,9 @@ Namespace Pipeline
         End Property
 
         ''' <summary>
-        ''' used for processing of the ec number terms, make the count of the hierarchical ec number terms by summing the count of the specific ec number terms
+        ''' used for processing of the ec number terms, make the count of the
+        ''' hierarchical ec number terms by summing the count of the specific 
+        ''' ec number terms
         ''' </summary>
         ''' <returns></returns>
         Public Function GetHierarchicalECNumberTerms() As Dictionary(Of String, Integer)
