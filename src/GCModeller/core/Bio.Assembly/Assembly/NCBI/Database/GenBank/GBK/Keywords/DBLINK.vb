@@ -55,6 +55,7 @@
 #End Region
 
 Imports System.Text
+Imports Microsoft.VisualBasic.ComponentModel.Collection
 Imports Microsoft.VisualBasic.ComponentModel.DataSourceModel
 Imports Microsoft.VisualBasic.Language
 Imports Microsoft.VisualBasic.Linq
@@ -72,6 +73,24 @@ Namespace Assembly.NCBI.GenBank.GBFF.Keywords
         ''' </summary>
         ''' <returns></returns>
         Public Property Links As NamedValue(Of String)()
+
+        Public ReadOnly Property assembly_id As String
+            Get
+                Return Links.KeyItem("Assembly").Value
+            End Get
+        End Property
+
+        Public ReadOnly Property bioproject As String
+            Get
+                Return Links.KeyItem("BioProject").Value
+            End Get
+        End Property
+
+        Public ReadOnly Property biosample As String
+            Get
+                Return Links.KeyItem("BioSample").Value
+            End Get
+        End Property
 
         ''' <summary>
         ''' 返回的是genbank的这部分的文本数据，用于生成genbank文件

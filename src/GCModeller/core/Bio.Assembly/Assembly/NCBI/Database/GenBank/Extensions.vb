@@ -255,6 +255,16 @@ Namespace Assembly.NCBI.GenBank
             Call headers.SetDefaultKey("lineage", lineage)
             Call headers.SetDefaultKey("gb_asm_id", accessionId)
 
+            If gb.DbLinks IsNot Nothing Then
+                Call headers.SetDefaultKey("assembly", If(gb.DbLinks.assembly_id, "n/a"))
+                Call headers.SetDefaultKey("bioproject", If(gb.DbLinks.bioproject, "n/a"))
+                Call headers.SetDefaultKey("biosample", If(gb.DbLinks.biosample, "n/a"))
+            Else
+                Call headers.SetDefaultKey("assembly", "n/a")
+                Call headers.SetDefaultKey("bioproject", "n/a")
+                Call headers.SetDefaultKey("biosample", "n/a")
+            End If
+
             For Each feature As gbffFeature In gb.Features.AsEnumerable
                 If feature.KeyName <> "CDS" Then
                     Continue For
