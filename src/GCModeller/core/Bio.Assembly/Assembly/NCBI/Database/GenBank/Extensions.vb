@@ -254,6 +254,7 @@ Namespace Assembly.NCBI.GenBank
             Call headers.SetDefaultKey("ncbi_taxid", gb.Taxon)
             Call headers.SetDefaultKey("lineage", lineage)
             Call headers.SetDefaultKey("gb_asm_id", accessionId)
+            Call headers.SetDefaultKey("species_name", gb.Source.SpeciesName)
 
             If gb.DbLinks IsNot Nothing Then
                 Call headers.SetDefaultKey("assembly", If(gb.DbLinks.assembly_id, "n/a"))
