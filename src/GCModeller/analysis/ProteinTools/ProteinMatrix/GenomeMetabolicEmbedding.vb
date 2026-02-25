@@ -13,6 +13,10 @@ Public Class GenomeMetabolicEmbedding
     End Sub
 
     Public Sub Add(genome As GenomeVector)
+        If genome.assembly_id = "n/a" Then
+            Return
+        End If
+
         If hierarchical Then
             Call vec.Add(genome.assembly_id, genome.GetHierarchicalECNumberTerms)
         Else
