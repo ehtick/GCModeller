@@ -254,7 +254,7 @@ Module KmersTool
         Else
             Dim vecs As New List(Of ClusterEntity)
 
-            For Each seq As FastaSeq In seqs
+            For Each seq As FastaSeq In TqdmWrapper.Wrap(seqs.ToArray)
                 Call vecs.Add(New ClusterEntity(seq.Title, bloom.MakeVector(seq)))
             Next
 
