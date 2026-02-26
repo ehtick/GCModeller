@@ -54,8 +54,10 @@ declare namespace FastQ {
     * 
      * @param fq -
      * @param n -
+     * @param lazy 
+     * + default value Is ``false``.
    */
-   function random_sampling(fq: object, n: object): object;
+   function random_sampling(fq: object, n: object, lazy?: boolean): object;
    module read {
       /**
        * read the fastq file
@@ -63,7 +65,7 @@ declare namespace FastQ {
        * 
         * @param file -
       */
-      function fastq(file: string): object;
+      function fastq(file: any): object;
    }
    /**
    */
