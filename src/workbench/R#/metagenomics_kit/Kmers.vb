@@ -3,8 +3,11 @@ Imports Microsoft.VisualBasic.ApplicationServices.Terminal.ProgressBar.Tqdm
 Imports Microsoft.VisualBasic.CommandLine.Reflection
 Imports Microsoft.VisualBasic.ComponentModel.Collection
 Imports Microsoft.VisualBasic.Data.Framework
+Imports Microsoft.VisualBasic.Data.IO
 Imports Microsoft.VisualBasic.DataMining.KMeans
 Imports Microsoft.VisualBasic.Linq
+Imports Microsoft.VisualBasic.MIME.application.json.BSON
+Imports Microsoft.VisualBasic.MIME.application.json.Javascript
 Imports Microsoft.VisualBasic.Scripting.MetaData
 Imports SMRUCC
 Imports SMRUCC.genomics.Analysis.HTS.DataFrame
@@ -208,18 +211,53 @@ Module KmersTool
     ''' <param name="env"></param>
     ''' <returns></returns>
     <ExportAPI("make_vector")>
-    Public Function make_vector(bloom As BloomVectorizer, <RRawVectorArgument> x As Object, Optional env As Environment = Nothing) As Object
+    Public Function make_vector(bloom As BloomVectorizer, <RRawVectorArgument> x As Object, Optional file As Object = Nothing, Optional env As Environment = Nothing) As Object
         Dim seqs As IEnumerable(Of FastaSeq) = pipHelper.GetFastaSeq(x, env)
-        Dim vecs As New List(Of ClusterEntity)
 
-        For Each seq As FastaSeq In seqs
-            Call vecs.Add(New ClusterEntity With {
-                .uid = seq.Title,
-                .entityVector = bloom.MakeVector(seq)
-            })
-        Next
+        If Not file Is Nothing Then
+            Dim is_file As Boolean = False
+            Dim save = SMRUCC.Rsharp.GetFileStream(file, System.IO.FileAccess.Write, env, is_filepath:=is_file)
 
-        Return vecs.ToArray
+            If save Like GetType(Message) Then
+                Return save.TryCast(Of Message)
+            End If
+
+            Dim s As New BinaryDataWriter(save.TryCast(Of System.IO.Stream))
+
+            For Each seq As FastaSeq In seqs
+                Dim vec As New ClusterEntity With {
+                    .uid = seq.Title,
+                    .entityVector = bloom.MakeVector(seq)
+                }
+                Dim bin = BSONFormat.GetBuffer(JsonObject.Create(vec))
+
+                Call s.Write(bin.ToArray)
+            Next
+
+            Call s.Flush()
+            Call s.Dispose()
+
+            Try
+                If is_file Then
+                    Call save.TryCast(Of System.IO.Stream).Dispose()
+                End If
+            Catch ex As Exception
+
+            End Try
+
+            Return True
+        Else
+            Dim vecs As New List(Of ClusterEntity)
+
+            For Each seq As FastaSeq In seqs
+                Call vecs.Add(New ClusterEntity With {
+                    .uid = seq.Title,
+                    .entityVector = bloom.MakeVector(seq)
+                })
+            Next
+
+            Return vecs.ToArray
+        End If
     End Function
 
     ''' <summary>
