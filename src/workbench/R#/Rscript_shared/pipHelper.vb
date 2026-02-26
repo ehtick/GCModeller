@@ -70,51 +70,51 @@ Module pipHelper
     End Function
 
     ''' <summary>
-    ''' 返回空值表示类型错误
+    ''' try to cast any data to a collection of fasta sequence data
     ''' </summary>
-    ''' <param name="a"></param>
-    ''' <returns></returns>
-    Public Function GetFastaSeq(a As Object, env As Environment, Optional allowString As Boolean = True) As IEnumerable(Of FastaSeq)
-        If a Is Nothing Then
+    ''' <param name="x"></param>
+    ''' <returns>返回空值表示类型错误</returns>
+    Public Function GetFastaSeq(x As Object, env As Environment, Optional allowString As Boolean = True) As IEnumerable(Of FastaSeq)
+        If x Is Nothing Then
             Return {}
-        ElseIf TypeOf a Is vector Then
-            a = DirectCast(a, vector).data
-        ElseIf TypeOf a Is dataframe Then
-            Return fastaFromDataframe(a)
-        ElseIf TypeOf a Is vbObject Then
-            a = DirectCast(a, vbObject).target
+        ElseIf TypeOf x Is vector Then
+            x = DirectCast(x, vector).data
+        ElseIf TypeOf x Is dataframe Then
+            Return fastaFromDataframe(x)
+        ElseIf TypeOf x Is vbObject Then
+            x = DirectCast(x, vbObject).target
         End If
 
-        Dim type As Type = a.GetType
+        Dim type As Type = x.GetType
 
         Select Case type
             Case GetType(FastaSeq)
-                Return {DirectCast(a, FastaSeq)}
+                Return {DirectCast(x, FastaSeq)}
             Case GetType(FastaFile)
-                Return DirectCast(a, FastaFile)
+                Return DirectCast(x, FastaFile)
             Case GetType(FastaSeq())
-                Return a
+                Return x
             Case GetType(list)
-                Return fastaFromCollection(DirectCast(a, list).data)
+                Return fastaFromCollection(DirectCast(x, list).data)
             Case Else
                 If type.IsArray Then
-                    If REnv.MeasureArrayElementType(a) Is GetType(FastaSeq) Then
-                        Return fastaFromCollection(a)
-                    ElseIf REnv.MeasureArrayElementType(a) Is GetType(String) AndAlso allowString Then
-                        Return fastaFromStrings(a)
+                    If REnv.MeasureArrayElementType(x) Is GetType(FastaSeq) Then
+                        Return fastaFromCollection(x)
+                    ElseIf REnv.MeasureArrayElementType(x) Is GetType(String) AndAlso allowString Then
+                        Return fastaFromStrings(x)
                     End If
                 ElseIf type Is GetType(pipeline) Then
-                    Dim pip As pipeline = DirectCast(a, pipeline)
+                    Dim pip As pipeline = DirectCast(x, pipeline)
 
                     If pip.elementType Like GetType(FastaSeq) Then
                         Return pip.populates(Of FastaSeq)(env)
                     ElseIf pip.elementType Like GetType(String) AndAlso allowString Then
-                        Return fastaFromStrings(a)
+                        Return fastaFromStrings(x)
                     Else
                         Return Nothing
                     End If
                 ElseIf type Is GetType(String) AndAlso allowString Then
-                    Return fastaFromStrings(a)
+                    Return fastaFromStrings(x)
                 Else
                     Return Nothing
                 End If
