@@ -7,10 +7,35 @@ Imports SMRUCC.genomics.SequenceModel.FASTA
 
 Namespace Kmers
 
-    Public Class BloomDatabase
+    Public Class BloomVectorizer
 
-        ReadOnly genomes As KmerBloomFilter()
-        ReadOnly k As Integer
+        Protected ReadOnly genomes As KmerBloomFilter()
+        Protected ReadOnly k As Integer
+
+        Sub New(filters As KmerBloomFilter())
+            Dim checkKmer = filters.GroupBy(Function(a) a.k).ToArray
+
+            If checkKmer.Length = 1 Then
+                genomes = filters
+                k = checkKmer(0).Key
+            Else
+                Throw New InvalidProgramException($"there are multiple k-mer length(k={checkKmer.Keys.ToArray.GetJson}) bloom filter is mixed at here!")
+            End If
+        End Sub
+
+        Public Function MakeVector(seq As IFastaProvider) As Double()
+            ' split reads sequence as kmers
+            Dim kmers As String() = KSeq.KmerSpans(seq.GetSequenceData, k).ToArray
+            Dim vec As IEnumerable(Of Double) = From genome As KmerBloomFilter
+                                                In genomes
+                                                Select genome.KmerHitNumber(kmers)
+            Return vec.ToArray
+        End Function
+
+    End Class
+
+    Public Class BloomDatabase : Inherits BloomVectorizer
+
         ReadOnly NcbiTaxonomyTree As LCA
         ReadOnly min_supports As Double = 0.35
         ReadOnly coverage As Double = 0.5
@@ -26,18 +51,11 @@ Namespace Kmers
                 Optional minSupports As Double = 0.35,
                 Optional coverage As Double = 0.5)
 
-            Me.genomes = genomes.ToArray
+            Call MyBase.New(genomes.ToArray)
+
             Me.NcbiTaxonomyTree = lca
             Me.min_supports = min_supports
             Me.coverage = coverage
-
-            Dim checkKmer = Me.genomes.GroupBy(Function(a) a.k).ToArray
-
-            If checkKmer.Length = 1 Then
-                k = checkKmer(0).Key
-            Else
-                Throw New InvalidProgramException($"there are multiple k-mer length(k={checkKmer.Keys.ToArray.GetJson}) bloom filter is mixed at here!")
-            End If
         End Sub
 
         Public Overrides Function ToString() As String
