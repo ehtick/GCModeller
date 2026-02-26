@@ -126,6 +126,17 @@ Public Module FastQTools
     End Function
 
     ''' <summary>
+    ''' make reads data random sampling
+    ''' </summary>
+    ''' <param name="fq"></param>
+    ''' <param name="n"></param>
+    ''' <returns></returns>
+    <ExportAPI("random_sampling")>
+    Public Function random_sampling(fq As FastQFile, n As Integer) As Object
+        Return pipeline.CreateFromPopulator(fq.Shuffles.Take(n))
+    End Function
+
+    ''' <summary>
     ''' Do short reads assembling
     ''' </summary>
     ''' <param name="reads">should be a set of the sequence data, example as a collection of <see cref="FastaSeq"/> data.</param>
