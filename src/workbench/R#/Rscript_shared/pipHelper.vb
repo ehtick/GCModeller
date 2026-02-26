@@ -39,6 +39,7 @@
 
 #End Region
 
+Imports Microsoft.VisualBasic.Emit.Delegates
 Imports Microsoft.VisualBasic.Language
 Imports Microsoft.VisualBasic.Linq
 Imports Microsoft.VisualBasic.Serialization.JSON
@@ -74,6 +75,15 @@ Module pipHelper
     ''' </summary>
     ''' <param name="x"></param>
     ''' <returns>返回空值表示类型错误</returns>
+    ''' <remarks>
+    ''' supports data source type for cast to fasta sequence:
+    ''' 
+    ''' 1. <see cref="FastaSeq"/>, <see cref="FastaFile"/>
+    ''' 2. a tuple list of <see cref="FastaSeq"/>
+    ''' 3. cast a sequence string to <see cref="FastaSeq"/>
+    ''' 4. <see cref="IFastaProvider"/> abstract data model, example as fastq sequence.
+    ''' 5. cast dataframe(should contains data field: name/title, sequence) to <see cref="FastaSeq"/> collection
+    ''' </remarks>
     Public Function GetFastaSeq(x As Object, env As Environment, Optional allowString As Boolean = True) As IEnumerable(Of FastaSeq)
         If x Is Nothing Then
             Return {}
@@ -83,6 +93,8 @@ Module pipHelper
             Return fastaFromDataframe(x)
         ElseIf TypeOf x Is vbObject Then
             x = DirectCast(x, vbObject).target
+        ElseIf TypeOf x Is list Then
+            x = DirectCast(x, list).data.ToArray
         End If
 
         Dim type As Type = x.GetType
@@ -94,31 +106,42 @@ Module pipHelper
                 Return DirectCast(x, FastaFile)
             Case GetType(FastaSeq())
                 Return x
-            Case GetType(list)
-                Return fastaFromCollection(DirectCast(x, list).data)
             Case Else
-                If type.IsArray Then
-                    If REnv.MeasureArrayElementType(x) Is GetType(FastaSeq) Then
-                        Return fastaFromCollection(x)
-                    ElseIf REnv.MeasureArrayElementType(x) Is GetType(String) AndAlso allowString Then
-                        Return fastaFromStrings(x)
-                    End If
-                ElseIf type Is GetType(pipeline) Then
-                    Dim pip As pipeline = DirectCast(x, pipeline)
-
-                    If pip.elementType Like GetType(FastaSeq) Then
-                        Return pip.populates(Of FastaSeq)(env)
-                    ElseIf pip.elementType Like GetType(String) AndAlso allowString Then
-                        Return fastaFromStrings(x)
-                    Else
-                        Return Nothing
-                    End If
-                ElseIf type Is GetType(String) AndAlso allowString Then
-                    Return fastaFromStrings(x)
-                Else
-                    Return Nothing
-                End If
+                Return GetFastaSeqs(x, type, env, allowString)
         End Select
+
+        Return Nothing
+    End Function
+
+    Private Function GetFastaSeqs(x As Object, type As Type, env As Environment, allowString As Boolean) As IEnumerable(Of FastaSeq)
+        If type.IsArray Then
+            Dim el As Type = REnv.MeasureArrayElementType(x)
+
+            If el Is GetType(FastaSeq) Then
+                Return fastaFromCollection(x)
+            ElseIf el Is GetType(String) AndAlso allowString Then
+                Return fastaFromStrings(x)
+            ElseIf el.ImplementInterface(Of IFastaProvider) Then
+                Return From seq As Object
+                       In DirectCast(x, Array)
+                       Let fa As IFastaProvider = DirectCast(seq, IFastaProvider)
+                       Select New FastaSeq(fa)
+            End If
+        ElseIf type Is GetType(pipeline) Then
+            Dim pip As pipeline = DirectCast(x, pipeline)
+
+            If pip.elementType Like GetType(FastaSeq) Then
+                Return pip.populates(Of FastaSeq)(env)
+            ElseIf pip.elementType Like GetType(String) AndAlso allowString Then
+                Return fastaFromStrings(x)
+            ElseIf pip.elementType.GetRawElementType.ImplementInterface(Of IFastaProvider) Then
+                Return From fa As IFastaProvider
+                       In pip.populates(Of IFastaProvider)(env)
+                       Select New FastaSeq(fa)
+            End If
+        ElseIf type Is GetType(String) AndAlso allowString Then
+            Return fastaFromStrings(x)
+        End If
 
         Return Nothing
     End Function
