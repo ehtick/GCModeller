@@ -169,7 +169,7 @@ Module pipHelper
         If a.GetType.IsArray Then
             vec = DirectCast(a, Array)
         Else
-            vec = REnv.asVector(Of Object)(a)
+            vec = CLRVector.asObject(a)
         End If
 
         For i As Integer = 0 To vec.Length - 1

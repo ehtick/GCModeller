@@ -81,7 +81,6 @@ Imports SMRUCC.Rsharp.Runtime.Interop
 Imports SMRUCC.Rsharp.Runtime.Vectorization
 Imports featureLocation = SMRUCC.genomics.Assembly.NCBI.GenBank.GBFF.Keywords.FEATURES.Location
 Imports gbffFeature = SMRUCC.genomics.Assembly.NCBI.GenBank.GBFF.Keywords.FEATURES.Feature
-Imports REnv = SMRUCC.Rsharp.Runtime
 Imports RInternal = SMRUCC.Rsharp.Runtime.Internal
 
 ''' <summary>
@@ -237,7 +236,7 @@ Module genbankKit
     End Function
 
     Private Iterator Function Populates(files As Object, autoClose As Boolean, env As Environment) As IEnumerable(Of GBFF.File)
-        For Each file As SeqValue(Of Object) In REnv.asVector(Of Object)(files) _
+        For Each file As SeqValue(Of Object) In CLRVector.asObject(files) _
             .AsObjectEnumerator _
             .SeqIterator
 
