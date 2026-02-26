@@ -101,7 +101,7 @@ Public Module FastQTools
     ''' <param name="file"></param>
     ''' <returns></returns>
     <ExportAPI("read.fastq")>
-    Public Function read_fastq(<RRawVectorArgument> file As Object) As FastQFile
+    Public Function read_fastq(<RRawVectorArgument(TypeCodes.string)> file As Object) As FastQFile
         Dim fileList As String() = CLRVector.asCharacter(file)
 
         If fileList.IsNullOrEmpty Then
