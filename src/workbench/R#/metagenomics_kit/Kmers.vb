@@ -5,6 +5,7 @@ Imports Microsoft.VisualBasic.ComponentModel.Collection
 Imports Microsoft.VisualBasic.Data.Framework
 Imports Microsoft.VisualBasic.Linq
 Imports Microsoft.VisualBasic.Scripting.MetaData
+Imports SMRUCC
 Imports SMRUCC.genomics.Analysis.HTS.DataFrame
 Imports SMRUCC.genomics.Analysis.Metagenome.Kmers
 Imports SMRUCC.genomics.Analysis.Metagenome.Kmers.Kraken2
@@ -181,6 +182,21 @@ Module KmersTool
             Select KmerBloomFilter.LoadFromFile(file)
         Dim kdb As New BloomDatabase(genomes, lca, min_supports, coverage)
         Return kdb
+    End Function
+
+    <ExportAPI("bloom_vector")>
+    Public Function bloom_vector(<RRawVectorArgument> x As Object,
+                                 Optional k As Integer = 35,
+                                 Optional env As Environment = Nothing) As Object
+
+        Dim seqs As IEnumerable(Of FastaSeq) = pipHelper.GetFastaSeq(x, env)
+        Dim blooms As New List(Of KmerBloomFilter)
+
+        For Each seq As FastaSeq In seqs
+            Call blooms.Add(KmerBloomFilter.Create(seq, 0, k))
+        Next
+
+        Return New BloomVectorizer(blooms)
     End Function
 
     ''' <summary>

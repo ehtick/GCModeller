@@ -12,11 +12,11 @@ Namespace Kmers
         Protected ReadOnly genomes As KmerBloomFilter()
         Protected ReadOnly k As Integer
 
-        Sub New(filters As KmerBloomFilter())
+        Sub New(filters As IReadOnlyCollection(Of KmerBloomFilter))
             Dim checkKmer = filters.GroupBy(Function(a) a.k).ToArray
 
             If checkKmer.Length = 1 Then
-                genomes = filters
+                genomes = filters.ToArray
                 k = checkKmer(0).Key
             Else
                 Throw New InvalidProgramException($"there are multiple k-mer length(k={checkKmer.Keys.ToArray.GetJson}) bloom filter is mixed at here!")

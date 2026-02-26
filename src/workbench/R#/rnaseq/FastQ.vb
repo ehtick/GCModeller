@@ -132,6 +132,7 @@ Public Module FastQTools
     ''' <param name="n"></param>
     ''' <returns></returns>
     <ExportAPI("random_sampling")>
+    <RApiReturn(GetType(FastQ))>
     Public Function random_sampling(fq As FastQFile, n As Integer) As Object
         Return pipeline.CreateFromPopulator(fq.Shuffles.Take(n))
     End Function
