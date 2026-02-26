@@ -6,6 +6,7 @@ Imports Microsoft.VisualBasic.Data.Framework
 Imports Microsoft.VisualBasic.Data.IO
 Imports Microsoft.VisualBasic.DataMining.KMeans
 Imports Microsoft.VisualBasic.Linq
+Imports Microsoft.VisualBasic.Math.Matrix
 Imports Microsoft.VisualBasic.MIME.application.json.BSON
 Imports Microsoft.VisualBasic.MIME.application.json.Javascript
 Imports Microsoft.VisualBasic.Scripting.MetaData
@@ -211,7 +212,11 @@ Module KmersTool
     ''' <param name="env"></param>
     ''' <returns></returns>
     <ExportAPI("make_vector")>
-    Public Function make_vector(bloom As BloomVectorizer, <RRawVectorArgument> x As Object, Optional file As Object = Nothing, Optional env As Environment = Nothing) As Object
+    Public Function make_vector(bloom As BloomVectorizer, <RRawVectorArgument> x As Object,
+                                Optional file As Object = Nothing,
+                                Optional as_matrix As Boolean = False,
+                                Optional env As Environment = Nothing) As Object
+
         Dim seqs As IEnumerable(Of FastaSeq) = pipHelper.GetFastaSeq(x, env)
 
         If Not file Is Nothing Then
@@ -256,7 +261,11 @@ Module KmersTool
                 })
             Next
 
-            Return vecs.ToArray
+            If as_matrix Then
+                Return New DataMatrix(vecs.Keys, From v As ClusterEntity In vecs Select v.entityVector)
+            Else
+                Return vecs.ToArray
+            End If
         End If
     End Function
 
