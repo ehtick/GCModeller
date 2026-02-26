@@ -3,6 +3,7 @@ Imports Microsoft.VisualBasic.ApplicationServices.Terminal.ProgressBar.Tqdm
 Imports Microsoft.VisualBasic.CommandLine.Reflection
 Imports Microsoft.VisualBasic.ComponentModel.Collection
 Imports Microsoft.VisualBasic.Data.Framework
+Imports Microsoft.VisualBasic.DataMining.KMeans
 Imports Microsoft.VisualBasic.Linq
 Imports Microsoft.VisualBasic.Scripting.MetaData
 Imports SMRUCC
@@ -197,6 +198,28 @@ Module KmersTool
         Next
 
         Return New BloomVectorizer(blooms)
+    End Function
+
+    ''' <summary>
+    ''' make vector embedding
+    ''' </summary>
+    ''' <param name="bloom"></param>
+    ''' <param name="x"></param>
+    ''' <param name="env"></param>
+    ''' <returns></returns>
+    <ExportAPI("make_vector")>
+    Public Function make_vector(bloom As BloomVectorizer, <RRawVectorArgument> x As Object, Optional env As Environment = Nothing) As Object
+        Dim seqs As IEnumerable(Of FastaSeq) = pipHelper.GetFastaSeq(x, env)
+        Dim vecs As New List(Of ClusterEntity)
+
+        For Each seq As FastaSeq In seqs
+            Call vecs.Add(New ClusterEntity With {
+                .uid = seq.Title,
+                .entityVector = bloom.MakeVector(seq)
+            })
+        Next
+
+        Return vecs.ToArray
     End Function
 
     ''' <summary>
