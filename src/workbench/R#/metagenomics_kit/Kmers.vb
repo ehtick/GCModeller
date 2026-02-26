@@ -194,10 +194,10 @@ Module KmersTool
                                  Optional k As Integer = 35,
                                  Optional env As Environment = Nothing) As Object
 
-        Dim seqs As IEnumerable(Of FastaSeq) = pipHelper.GetFastaSeq(x, env)
+        Dim seqs As FastaSeq() = pipHelper.GetFastaSeq(x, env).ToArray
         Dim blooms As New List(Of KmerBloomFilter)
 
-        For Each seq As FastaSeq In seqs
+        For Each seq As FastaSeq In TqdmWrapper.Wrap(seqs)
             Call blooms.Add(KmerBloomFilter.Create(seq, 0, k))
         Next
 
