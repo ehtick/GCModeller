@@ -101,8 +101,22 @@ Public Module FastQTools
     ''' <param name="file"></param>
     ''' <returns></returns>
     <ExportAPI("read.fastq")>
-    Public Function read_fastq(file As String) As FastQFile
-        Return FastQFile.Load(file)
+    Public Function read_fastq(<RRawVectorArgument> file As Object) As FastQFile
+        Dim fileList As String() = CLRVector.asCharacter(file)
+
+        If fileList.IsNullOrEmpty Then
+            Return Nothing
+        ElseIf fileList.Length = 1 Then
+            Return FastQFile.Load(fileList(0))
+        Else
+            Dim reads As New List(Of FastQ)
+
+            For Each path As String In fileList
+                Call reads.AddRange(FastQFile.LoadStream(path))
+            Next
+
+            Return New FastQFile(reads)
+        End If
     End Function
 
     <ExportAPI("write.fastq")>
@@ -133,8 +147,14 @@ Public Module FastQTools
     ''' <returns></returns>
     <ExportAPI("random_sampling")>
     <RApiReturn(GetType(FastQ))>
-    Public Function random_sampling(fq As FastQFile, n As Integer) As Object
-        Return pipeline.CreateFromPopulator(fq.Shuffles.Take(n))
+    Public Function random_sampling(fq As FastQFile, n As Integer, Optional lazy As Boolean = False) As Object
+        Dim shuffle = fq.Shuffles.Take(n)
+
+        If lazy Then
+            Return pipeline.CreateFromPopulator(shuffle)
+        Else
+            Return shuffle.ToArray
+        End If
     End Function
 
     ''' <summary>

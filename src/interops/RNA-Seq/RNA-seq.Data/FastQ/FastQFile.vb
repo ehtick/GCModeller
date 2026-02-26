@@ -87,11 +87,11 @@ Namespace FQ
         ''' <param name="path">The file handle of the fastq data.</param>
         ''' <returns></returns>
         Public Shared Function Load(path As String, Optional encoding As Encodings = Encodings.Default) As FastQFile
-            Dim FastaqFile As New FastQFile With {
-                ._innerList = Stream.ReadAllLines(path, encoding).AsList
-            }
+            Return New FastQFile(Stream.ReadAllLines(path, encoding))
+        End Function
 
-            Return FastaqFile
+        Public Shared Function LoadStream(path As String, Optional encoding As Encodings = Encodings.Default) As IEnumerable(Of FastQ)
+            Return Stream.ReadAllLines(path, encoding)
         End Function
 
 #Region "Implements Generic.IList(Of Fastaq)"
