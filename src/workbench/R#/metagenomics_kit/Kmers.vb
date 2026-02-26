@@ -255,10 +255,7 @@ Module KmersTool
             Dim vecs As New List(Of ClusterEntity)
 
             For Each seq As FastaSeq In seqs
-                Call vecs.Add(New ClusterEntity With {
-                    .uid = seq.Title,
-                    .entityVector = bloom.MakeVector(seq)
-                })
+                Call vecs.Add(New ClusterEntity(seq.Title, bloom.MakeVector(seq)))
             Next
 
             If as_matrix Then

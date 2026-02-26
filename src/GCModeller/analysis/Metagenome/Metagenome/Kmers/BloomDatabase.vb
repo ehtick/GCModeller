@@ -28,7 +28,7 @@ Namespace Kmers
             Dim kmers As String() = KSeq.KmerSpans(seq.GetSequenceData, k).ToArray
             Dim vec As IEnumerable(Of Double) = From genome As KmerBloomFilter
                                                 In genomes
-                                                Select genome.KmerHitNumber(kmers)
+                                                Select CDbl(genome.KmerHitNumber(kmers))
             Return vec.ToArray
         End Function
 
