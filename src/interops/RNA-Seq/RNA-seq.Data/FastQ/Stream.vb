@@ -63,7 +63,7 @@ Namespace FQ
     Public Module Stream
 
         Public Iterator Function ReadAllLines(path$, Optional encoding As Encodings = Encodings.Default) As IEnumerable(Of FastQ)
-            Dim strBuffer As IEnumerable(Of String()) = TaskPartitions.SplitIterator(path.IterateAllLines, 4)
+            Dim strBuffer As IEnumerable(Of String()) = TaskPartitions.SplitIterator(path.IterateAllLines, 4, echo:=False)
 
             For Each fq As FastQ In strBuffer.AsParallel.Select(AddressOf FastQ.FastaqParser)
                 Yield fq
