@@ -10,12 +10,15 @@ Imports SMRUCC.genomics.SequenceModel.FASTA
 
 Namespace Kmers
 
+    ''' <summary>
+    ''' kmer bloom filter of a specific genome
+    ''' </summary>
     Public Class KmerBloomFilter
 
         ReadOnly bloomFilter As BloomFilter
 
         ''' <summary>
-        ''' the genome name
+        ''' the genome name(multiple chromosome name)
         ''' </summary>
         ReadOnly names As String()
 
@@ -23,6 +26,10 @@ Namespace Kmers
         ''' the length of the k-mer
         ''' </summary>
         Public ReadOnly Property k As Integer
+        ''' <summary>
+        ''' the genome taxonomy id
+        ''' </summary>
+        ''' <returns></returns>
         Public ReadOnly Property ncbi_taxid As Integer
 
         Const magicNum As String = "kmer-bloom"
@@ -158,6 +165,38 @@ Namespace Kmers
             Call bin.Flush()
         End Sub
 
+        ''' <summary>
+        ''' 
+        ''' </summary>
+        ''' <typeparam name="Fasta"></typeparam>
+        ''' <param name="genomics">the genomics sequence data of a organism, single chromosome sequence data</param>
+        ''' <param name="ncbi_taxid"></param>
+        ''' <param name="k"></param>
+        ''' <param name="desiredFPR"></param>
+        ''' <param name="spanSize"></param>
+        ''' <returns></returns>
+        Public Shared Function Create(Of Fasta As IFastaProvider)(genomics As Fasta,
+                                                                  ncbi_taxid As Integer,
+                                                                  Optional k As Integer = 35,
+                                                                  Optional desiredFPR As Double = 0.00001,
+                                                                  Optional spanSize As Integer = 50 * ByteSize.MB) As KmerBloomFilter
+            Return Create({genomics},
+                          ncbi_taxid:=ncbi_taxid,
+                          k:=k,
+                          desiredFPR:=desiredFPR,
+                          spanSize:=spanSize)
+        End Function
+
+        ''' <summary>
+        ''' 
+        ''' </summary>
+        ''' <typeparam name="Fasta"></typeparam>
+        ''' <param name="genomics">the genomics sequence data of a organism, multiple chromosome sequence data</param>
+        ''' <param name="ncbi_taxid"></param>
+        ''' <param name="k"></param>
+        ''' <param name="desiredFPR"></param>
+        ''' <param name="spanSize"></param>
+        ''' <returns></returns>
         Public Shared Function Create(Of Fasta As IFastaProvider)(genomics As IEnumerable(Of Fasta),
                                                                   ncbi_taxid As Integer,
                                                                   Optional k As Integer = 35,
