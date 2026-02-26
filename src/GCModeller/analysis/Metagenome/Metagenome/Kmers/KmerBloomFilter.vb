@@ -5,6 +5,7 @@ Imports Microsoft.VisualBasic.ApplicationServices.Terminal.ProgressBar.Tqdm
 Imports Microsoft.VisualBasic.ComponentModel.DataSourceModel.Repository
 Imports Microsoft.VisualBasic.ComponentModel.Ranges.Unit
 Imports Microsoft.VisualBasic.Data.IO
+Imports SMRUCC.genomics.Assembly.NCBI.Entrez
 Imports SMRUCC.genomics.SequenceModel
 Imports SMRUCC.genomics.SequenceModel.FASTA
 
@@ -180,11 +181,24 @@ Namespace Kmers
                                                                   Optional k As Integer = 35,
                                                                   Optional desiredFPR As Double = 0.00001,
                                                                   Optional spanSize As Integer = 50 * ByteSize.MB) As KmerBloomFilter
-            Return Create({genomics},
-                          ncbi_taxid:=ncbi_taxid,
-                          k:=k,
-                          desiredFPR:=desiredFPR,
-                          spanSize:=spanSize)
+
+            Dim estimatedKmers As Integer = Math.Max(0, Math.Min(spanSize, genomics.length - k + 1))
+            Dim filter As BloomFilter = BloomFilter.Create(estimatedKmers, desiredFPR)
+            Dim ntseq As String = genomics.GetSequenceData
+
+            For i As Integer = 0 To ntseq.Length Step spanSize
+                Dim len As Integer = spanSize
+
+                If i + len > ntseq.Length Then
+                    len = ntseq.Length - i
+                End If
+
+                For Each kmer As String In KSeq.KmerSpans(ntseq.Substring(i, len), k)
+                    Call filter.Add(kmer)
+                Next
+            Next
+
+            Return New KmerBloomFilter(k, {genomics.title}, ncbi_taxid, filter)
         End Function
 
         ''' <summary>
