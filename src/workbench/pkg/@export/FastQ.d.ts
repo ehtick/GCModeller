@@ -48,6 +48,14 @@ declare namespace FastQ {
      * @return the quality score data of each @``T:SMRUCC.genomics.SequenceModel.FQ.FastQ`` sequence data.
    */
    function quality_score(q: any, env?: object): number;
+   /**
+    * make reads data random sampling
+    * 
+    * 
+     * @param fq -
+     * @param n -
+   */
+   function random_sampling(fq: object, n: object): object;
    module read {
       /**
        * read the fastq file

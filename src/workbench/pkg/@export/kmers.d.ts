@@ -68,6 +68,11 @@ declare namespace kmers {
    */
    function bloom_filters(repo_dir: string, ncbi_taxonomy: object, min_supports?: number, coverage?: number): object;
    /**
+     * @param k default value Is ``35``.
+     * @param env default value Is ``null``.
+   */
+   function bloom_vector(x: any, k?: object, env?: object): any;
+   /**
     * filter the reads data that has the specific taxonomy id assignment.
     * 
     * 
@@ -135,6 +140,19 @@ declare namespace kmers {
      * + default value Is ``null``.
    */
    function make_classify(db: any, reads: any, n_threads?: object, env?: object): object|object;
+   /**
+    * make vector embedding
+    * 
+    * 
+     * @param bloom -
+     * @param x -
+     * @param file 
+     * + default value Is ``null``.
+     * @param env -
+     * 
+     * + default value Is ``null``.
+   */
+   function make_vector(bloom: object, x: any, file?: any, env?: object): any;
    /**
      * @param type default value Is ``null``.
      * @param k default value Is ``6``.

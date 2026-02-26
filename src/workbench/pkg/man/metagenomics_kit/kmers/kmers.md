@@ -7,6 +7,8 @@
 + [bayes_background](kmers/bayes_background.1) 
 + [read_seqid](kmers/read_seqid.1) 
 + [bloom_filters](kmers/bloom_filters.1) 
++ [bloom_vector](kmers/bloom_vector.1) 
++ [make_vector](kmers/make_vector.1) make vector embedding
 + [make_classify](kmers/make_classify.1) just make reads classify of the fastq reads based on the k-mer distribution
 + [bayes_estimate](kmers/bayes_estimate.1) 
 + [bayes_abundance](kmers/bayes_abundance.1) quantify of the metagenome community via kmers and bayes method
