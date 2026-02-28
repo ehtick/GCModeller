@@ -9,6 +9,10 @@
 */
 declare namespace QC {
    /**
+     * @param env default value Is ``null``.
+   */
+   function nano_plot(reads: any, env?: object): object;
+   /**
      * @param quality default value Is ``20``.
      * @param env default value Is ``null``.
    */
