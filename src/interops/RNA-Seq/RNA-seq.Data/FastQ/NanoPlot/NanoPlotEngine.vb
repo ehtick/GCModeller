@@ -1,4 +1,5 @@
-﻿Imports Microsoft.VisualBasic.Imaging.LayoutModel
+﻿Imports System.Runtime.CompilerServices
+Imports Microsoft.VisualBasic.Imaging.LayoutModel
 Imports Microsoft.VisualBasic.Language
 Imports Microsoft.VisualBasic.Math
 Imports Microsoft.VisualBasic.Math.Distributions.BinBox
@@ -17,10 +18,12 @@ Namespace FQ.NanoPlot
         ''' </summary>
         ''' <param name="reads">解析后的 FastQ 集合</param>
         ''' <returns>包含汇总统计和绘图数据的对象</returns>
-        Public Function CalculateNanoPlotData(reads As List(Of FastQ)) As NanoPlotResult
+        ''' 
+        <Extension>
+        Public Function CalculateNanoPlotData(reads As IEnumerable(Of FastQ)) As NanoPlotResult
             ' 1. 提取基础数据 (长度和质量)
             ' 优化：使用并行处理加速大数据集计算
-            Dim rawData As List(Of ReadStats) = reads.AsParallel().Select(Function(r) New ReadStats(r.Length, CalculateMeanQuality(r))).AsList()
+            Dim rawData As List(Of ReadStats) = reads.ToList.AsParallel().Select(Function(r) New ReadStats(r.Length, CalculateMeanQuality(r))).AsList()
 
             If rawData.Count = 0 Then
                 Return Nothing
