@@ -158,7 +158,7 @@ Namespace FQ
         ''' 
         Public Shared Iterator Function GetQualityOrder(q As String) As IEnumerable(Of Integer)
             For Each c As Char In q
-                Yield Asc(q) - 33
+                Yield Asc(c) - 33
             Next
         End Function
 
@@ -173,15 +173,15 @@ Namespace FQ
         ''' markers (these characters can also occur in the quality string).[2] An example of a tools that break the 4 line convention 
         ''' is vcfutils.pl from samtools.[3]
         ''' </remarks>
-        Public Shared Function FastaqParser(str As String()) As FastQ
-            Dim Fastq As New FastQ With {
+        Public Shared Function FastQParser(str As String()) As FastQ
+            Dim FastQ As New FastQ With {
                 .SequenceData = str(1),
                 .SEQ_ID = str(0),
                 .SEQ_Info = str(2),
                 .Quality = str(3)
             }
 
-            Return Fastq
+            Return FastQ
         End Function
     End Class
 End Namespace
