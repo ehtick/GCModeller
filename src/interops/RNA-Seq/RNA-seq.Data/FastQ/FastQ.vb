@@ -174,14 +174,14 @@ Namespace FQ
         ''' is vcfutils.pl from samtools.[3]
         ''' </remarks>
         Public Shared Function FastaqParser(str As String()) As FastQ
-            Dim Fastaq As New FastQ With {
+            Dim Fastq As New FastQ With {
                 .SequenceData = str(1),
                 .SEQ_ID = str(0),
                 .SEQ_Info = str(2),
                 .Quality = str(3)
             }
 
-            Return Fastaq
+            Return Fastq
         End Function
     End Class
 End Namespace
