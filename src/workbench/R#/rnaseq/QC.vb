@@ -3,6 +3,7 @@ Imports Microsoft.VisualBasic.CommandLine.Reflection
 Imports Microsoft.VisualBasic.Scripting.MetaData
 Imports SMRUCC.genomics.SequenceModel
 Imports SMRUCC.genomics.SequenceModel.FQ
+Imports SMRUCC.genomics.SequenceModel.FQ.NanoPlot
 Imports SMRUCC.Rsharp.Runtime
 Imports SMRUCC.Rsharp.Runtime.Internal.[Object]
 Imports SMRUCC.Rsharp.Runtime.Interop
@@ -48,6 +49,20 @@ Module QC
         Else
             Return pipeline.CreateFromPopulator(readsPool.TrimPrimersSmithWaterman(CLRVector.asCharacter(headers), minScore:=0, cutoff:=cutoff))
         End If
+    End Function
+
+    <ExportAPI("nano_plot")>
+    <RApiReturn(GetType(NanoPlotResult))>
+    Public Function nano_plot(<RRawVectorArgument> reads As Object, Optional env As Environment = Nothing) As Object
+        Dim pull As pipeline = pipeline.TryCreatePipeline(Of FQ.FastQ)(reads, env)
+
+        If pull.isError Then
+            Return pull.getError
+        End If
+
+        Dim readsPool As IEnumerable(Of FQ.FastQ) = pull.populates(Of FQ.FastQ)(env)
+        Dim nanoplot As NanoPlotResult = readsPool.CalculateNanoPlotData
+        Return nanoplot
     End Function
 
 End Module
