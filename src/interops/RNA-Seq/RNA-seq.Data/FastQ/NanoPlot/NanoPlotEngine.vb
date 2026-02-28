@@ -1,6 +1,9 @@
 ﻿Imports Microsoft.VisualBasic.Imaging.LayoutModel
 Imports Microsoft.VisualBasic.Language
 Imports Microsoft.VisualBasic.Math
+Imports Microsoft.VisualBasic.Math.Distributions
+Imports Microsoft.VisualBasic.Math.Distributions.BinBox
+Imports Microsoft.VisualBasic.Math.Statistics.Linq
 Imports Microsoft.VisualBasic.Scripting.Expressions
 Imports SMRUCC.genomics.SequenceModel.FQ
 Imports randf = Microsoft.VisualBasic.Math.RandomExtensions
@@ -110,10 +113,10 @@ Public Module NanoPlotEngine
 
         ' 计算中位数 (注意：大数据集排序可能较慢)
         Dim sortedLengths = data.Select(Function(r) r.Length).OrderBy(Function(x) x).ToList()
-        summary.MedianLength = Median(sortedLengths)
+        summary.MedianLength = sortedLengths.Median
 
         Dim sortedQuals = data.Select(Function(r) r.MeanQuality).OrderBy(Function(x) x).ToList()
-        summary.MedianQuality = Median(sortedQuals)
+        summary.MedianQuality = sortedQuals.Median
 
         ' 计算平均质量
         summary.MeanQuality = data.Average(Function(r) r.MeanQuality)
@@ -122,22 +125,6 @@ Public Module NanoPlotEngine
         summary.N50 = CalculateN50(sortedLengths, summary.TotalBases)
 
         Return summary
-    End Function
-
-    Private Function Median(sortedData As IList(Of Double)) As Double
-        If sortedData.Count Mod 2 = 0 Then
-            Return (sortedData(sortedData.Count \ 2 - 1) + sortedData(sortedData.Count \ 2)) / 2.0
-        Else
-            Return sortedData(sortedData.Count \ 2)
-        End If
-    End Function
-
-    Private Function Median(sortedData As IList(Of Integer)) As Double
-        If sortedData.Count Mod 2 = 0 Then
-            Return (sortedData(sortedData.Count \ 2 - 1) + sortedData(sortedData.Count \ 2)) / 2.0
-        Else
-            Return sortedData(sortedData.Count \ 2)
-        End If
     End Function
 
     ''' <summary>
@@ -161,44 +148,23 @@ Public Module NanoPlotEngine
     ''' <summary>
     ''' 生成分箱数据用于直方图展示
     ''' </summary>
-    Private Function CreateHistogram(values As IEnumerable(Of Double), bins As Integer, doLog As Boolean) As List(Of HistogramBin)
-        Dim list = values.ToList()
-        If list.Count = 0 Then Return New List(Of HistogramBin)()
+    Private Iterator Function CreateHistogram(values As IEnumerable(Of Double), bins As Integer, doLog As Boolean) As IEnumerable(Of HistogramBin)
+        Dim list = values.ToArray
+        If list.Count = 0 Then Return
 
         ' 如果是对数分箱，先对数据取 Log10
         Dim processedValues = If(doLog,
-            list.Where(Function(v) v > 0).Select(Function(v) Math.Log10(v)).ToList(),
+            list.Where(Function(v) v > 0).Select(Function(v) Math.Log10(v)).ToArray,
             list)
 
-        If processedValues.Count = 0 Then Return New List(Of HistogramBin)()
+        If processedValues.Count = 0 Then Return
 
-        Dim minVal = processedValues.Min()
-        Dim maxVal = processedValues.Max()
-        Dim stepSize = (maxVal - minVal) / bins
-
-        ' 防止所有值相同导致除零
-        If stepSize = 0 Then stepSize = 1
-
-        Dim histogram = New Dictionary(Of Integer, Integer)()
-
-        ' 初始化桶
-        For i = 0 To bins - 1
-            histogram(i) = 0
-        Next
-
-        ' 数据分箱
-        For Each Val As Double In processedValues
-            Dim index As Integer = CInt(Math.Floor((Val - minVal) / stepSize))
-            If index >= bins Then index = bins - 1 ' 处理最大值边界情况
-            If index < 0 Then index = 0
-            histogram(index) += 1
-        Next
+        Dim histogram As DataBinBox(Of Double)() = CutBins.FixedWidthBins(processedValues, k:=bins, eval:=Function(x) x).ToArray
 
         ' 转换为绘图用的 Bin 列表
-        Dim result As New List(Of HistogramBin)()
-        For i = 0 To bins - 1
-            Dim startVal = minVal + i * stepSize
-            Dim endVal = startVal + stepSize
+        For Each bin As DataBinBox(Of Double) In histogram
+            Dim startVal = bin.Boundary.Min
+            Dim endVal = bin.Boundary.Max
 
             ' 如果之前做了 Log 转换，这里还原回去作为 Label
             Dim label As String
@@ -208,21 +174,19 @@ Public Module NanoPlotEngine
                 label = $"{startVal:F1} - {endVal:F1}"
             End If
 
-            result.Add(New HistogramBin With {
+            Yield New HistogramBin With {
                 .Start = startVal,
                 .End = endVal,
-                .Count = histogram(i),
+                .Count = bin.Count,
                 .Label = label
-            })
+            }
         Next
-
-        Return result
     End Function
 
     ''' <summary>
     ''' 生成散点图数据，包含降采样逻辑
     ''' </summary>
-    Private Iterator Function CreateScatterData(data As List(Of ReadStats), sampleSize As Integer) As IEnumerable(Of List(Of Point2D))
+    Private Iterator Function CreateScatterData(data As List(Of ReadStats), sampleSize As Integer) As IEnumerable(Of Point2D)
         ' 如果数据量小于采样数，直接返回全部
         If data.Count <= sampleSize Then
             For Each r As ReadStats In data
