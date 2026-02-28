@@ -1,7 +1,9 @@
-﻿Imports Microsoft.VisualBasic.Language
+﻿Imports Microsoft.VisualBasic.Imaging.LayoutModel
+Imports Microsoft.VisualBasic.Language
 Imports Microsoft.VisualBasic.Math
 Imports Microsoft.VisualBasic.Scripting.Expressions
 Imports SMRUCC.genomics.SequenceModel.FQ
+Imports randf = Microsoft.VisualBasic.Math.RandomExtensions
 
 ''' <summary>
 ''' 用于存储单个序列统计指标的结构体
@@ -47,14 +49,6 @@ Public Class HistogramBin
 End Class
 
 ''' <summary>
-''' 散点图数据点
-''' </summary>
-Public Class ScatterPoint
-    Public Property X As Double
-    Public Property Y As Double
-End Class
-
-''' <summary>
 ''' 模拟 NanoPlot 的统计计算模块
 ''' </summary>
 Public Module NanoPlotEngine
@@ -64,7 +58,7 @@ Public Module NanoPlotEngine
     ''' </summary>
     ''' <param name="reads">解析后的 FastQ 集合</param>
     ''' <returns>包含汇总统计和绘图数据的对象</returns>
-    Public Function CalculateNanoPlotData(reads As List(Of FastQ)) As (Summary As NanoSummary, LengthHist As List(Of HistogramBin), QualHist As List(Of HistogramBin), ScatterData As List(Of ScatterPoint))
+    Public Function CalculateNanoPlotData(reads As List(Of FastQ)) As (Summary As NanoSummary, LengthHist As List(Of HistogramBin), QualHist As List(Of HistogramBin), ScatterData As List(Of Point2D))
         ' 1. 提取基础数据 (长度和质量)
         ' 优化：使用并行处理加速大数据集计算
         Dim rawData As List(Of ReadStats) = reads.AsParallel().Select(Function(r) New ReadStats(r.Length, CalculateMeanQuality(r))).AsList()
@@ -228,30 +222,27 @@ Public Module NanoPlotEngine
     ''' <summary>
     ''' 生成散点图数据，包含降采样逻辑
     ''' </summary>
-    Private Function CreateScatterData(data As List(Of ReadStats), sampleSize As Integer) As List(Of ScatterPoint)
+    Private Iterator Function CreateScatterData(data As List(Of ReadStats), sampleSize As Integer) As IEnumerable(Of List(Of Point2D))
         ' 如果数据量小于采样数，直接返回全部
         If data.Count <= sampleSize Then
-            Return data.Select(Function(r) New ScatterPoint With {.X = r.Length, .Y = r.MeanQuality}).ToList()
+            For Each r As ReadStats In data
+                Yield New Point2D(r.Length, r.MeanQuality)
+            Next
+        Else
+            ' 简单的随机降采样
+            ' 使用蓄水池抽样算法 或者简单的随机索引
+            Dim indices As New HashSet(Of Integer)()
+            While indices.Count < sampleSize
+                indices.Add(randf.NextInteger(0, data.Count))
+            End While
+
+            For Each idx In indices
+                Yield New Point2D With {
+                    .X = data(idx).Length,
+                    .Y = data(idx).MeanQuality
+                }
+            Next
         End If
-
-        ' 简单的随机降采样
-        Dim rand As New Random()
-        Dim result As New List(Of ScatterPoint)(sampleSize)
-
-        ' 使用蓄水池抽样算法 或者简单的随机索引
-        Dim indices As New HashSet(Of Integer)()
-        While indices.Count < sampleSize
-            indices.Add(rand.Next(0, data.Count))
-        End While
-
-        For Each idx In indices
-            result.Add(New ScatterPoint With {
-                .X = data(idx).Length,
-                .Y = data(idx).MeanQuality
-            })
-        Next
-
-        Return result
     End Function
 
 End Module
