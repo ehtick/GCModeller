@@ -59,6 +59,7 @@ Imports System.IO
 Imports System.Runtime.CompilerServices
 Imports Microsoft.VisualBasic.CommandLine.Reflection
 Imports Microsoft.VisualBasic.ComponentModel.DataSourceModel
+Imports Microsoft.VisualBasic.ComponentModel.DataSourceModel.Repository
 Imports Microsoft.VisualBasic.Data.Framework
 Imports Microsoft.VisualBasic.Language
 Imports Microsoft.VisualBasic.Linq
@@ -105,7 +106,10 @@ Module microbiomeKit
     <RGenericOverloads("as.data.frame")>
     Private Function leveltable(data As RankLevelView(), args As list, env As Environment) As dataframe
         Dim df As New dataframe With {
-            .rownames = data.Select(Function(o) o.TaxonomyName).ToArray,
+            .rownames = data _
+                .Select(Function(o) o.TaxonomyName) _
+                .UniqueNames _
+                .ToArray,
             .columns = New Dictionary(Of String, Array)
         }
 
