@@ -53,6 +53,8 @@
 
 #End Region
 
+Imports Microsoft.VisualBasic.ComponentModel.Collection.Generic
+Imports Microsoft.VisualBasic.ComponentModel.DataSourceModel
 Imports Microsoft.VisualBasic.Data.Framework.StorageProvider.Reflection
 Imports Microsoft.VisualBasic.Linq
 Imports SMRUCC.genomics.Analysis.HTS.DataFrame
@@ -60,18 +62,18 @@ Imports SMRUCC.genomics.Analysis.HTS.DataFrame
 ''' <summary>
 ''' samples data aggregate in a specific taxonomy rank
 ''' </summary>
-Public Class RankLevelView
+Public Class RankLevelView : Implements IDynamicMeta(Of Double), INamedValue
 
     ''' <summary>
     ''' the otu id in current taxonomy rank
     ''' </summary>
     ''' <returns></returns>
     Public Property OTUs As String()
-    Public Property TaxonomyName As String
+    Public Property TaxonomyName As String Implements INamedValue.Key
     Public Property Tree As String
 
     <Meta(GetType(Double))>
-    Public Property Samples As Dictionary(Of String, Double)
+    Public Property Samples As Dictionary(Of String, Double) Implements IDynamicMeta(Of Double).Properties
 
     Public Function Vector(sampleIds As IEnumerable(Of String), Optional [default] As Double = 0) As IEnumerable(Of Double)
         Return From id As String
