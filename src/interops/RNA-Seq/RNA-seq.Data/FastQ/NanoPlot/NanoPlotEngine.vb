@@ -76,10 +76,10 @@ Namespace FQ.NanoPlot
 
 
             ' 计算中位数 (注意：大数据集排序可能较慢)
-            Dim sortedLengths = data.Select(Function(r) r.Length).OrderBy(Function(x) x).ToList()
+            Dim sortedLengths = data.Select(Function(r) r.Length).OrderBy(Function(x) x).ToArray
             summary.MedianLength = sortedLengths.Median
 
-            Dim sortedQuals = data.Select(Function(r) r.MeanQuality).OrderBy(Function(x) x).ToList()
+            Dim sortedQuals = data.Select(Function(r) r.MeanQuality).OrderBy(Function(x) x).ToArray
             summary.MedianQuality = sortedQuals.Median
 
             ' 计算平均质量
@@ -94,13 +94,13 @@ Namespace FQ.NanoPlot
         ''' <summary>
         ''' 计算 N50 值
         ''' </summary>
-        Private Function CalculateN50(sortedLengths As List(Of Integer), totalBases As Long) As Long
+        Private Function CalculateN50(sortedLengths As Integer(), totalBases As Long) As Long
             Dim halfTotal As Long = totalBases \ 2
             Dim runningSum As Long = 0
 
             ' sortedLengths 应该已经是升序排列，但N50通常是从大到小累加
             ' 为了性能，我们从后向前遍历（相当于降序）
-            For i As Integer = sortedLengths.Count - 1 To 0 Step -1
+            For i As Integer = sortedLengths.Length - 1 To 0 Step -1
                 runningSum += sortedLengths(i)
                 If runningSum >= halfTotal Then
                     Return sortedLengths(i)
