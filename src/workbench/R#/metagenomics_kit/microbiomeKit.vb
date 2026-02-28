@@ -123,7 +123,9 @@ Module microbiomeKit
             .ToArray
 
         For Each id As String In sample_ids
-            Call df.add(id, From o As RankLevelView In data Select o.Samples.TryGetValue(id))
+            Call df.add(id, From o As RankLevelView
+                            In data
+                            Select o.Samples.TryGetValue(id))
         Next
 
         Return df
