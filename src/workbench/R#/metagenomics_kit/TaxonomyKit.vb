@@ -179,6 +179,7 @@ Module TaxonomyKit
     ''' biom_string.parse(["k__Bacteria; p__Firmicutes; c__Clostridia; o__Clostridiales; f__Lachnospiraceae; g__Robinsoniella; s__peoriensis"]);
     ''' </example>
     <ExportAPI("biom_string.parse")>
+    <RApiReturn(GetType(Taxonomy))>
     Public Function ParseBIOMString(<RRawVectorArgument> taxonomy As Object, Optional env As Environment = Nothing) As Object
         Dim strings As String() = CLRVector.asCharacter(taxonomy)
         Dim taxlist As Taxonomy() = strings _
@@ -198,26 +199,35 @@ Module TaxonomyKit
     <ExportAPI("taxonomy_name")>
     Public Function taxonomy_name(<RRawVectorArgument> taxonomy As Object,
                                   Optional rank As TaxonomyRanks = TaxonomyRanks.NA,
+                                  Optional missing As String = "Unknown",
                                   Optional env As Environment = Nothing) As Object
 
-        Dim taxons = ParseBIOMString(taxonomy, env)
+        Dim taxons = If(TypeOf taxonomy Is Taxonomy(),
+            taxonomy,
+            ParseBIOMString(taxonomy, env)
+        )
 
         If TypeOf taxons Is Message Then
             Return taxons
         End If
 
         Dim taxList As Taxonomy() = DirectCast(taxons, Taxonomy())
-        Dim names As String()
+        Dim query As IEnumerable(Of String)
 
         If rank = TaxonomyRanks.NA Then
-            names = taxList.Select(Function(t) If(t.ToArray.LastOrDefault, "Unknown")).ToArray
+            query = From t As Taxonomy
+                    In taxList
+                    Select If(t.scientificName, missing)
         Else
-            names = taxList _
-                .Select(Function(t)
-                            Return If(t.Select(rank).LastOrDefault, "Unknown")
-                        End Function) _
-                .ToArray
+            query = From t As Taxonomy
+                    In taxList
+                    Let rankLast As String = t _
+                        .Select(rank) _
+                        .LastOrDefault
+                    Select If(rankLast, missing)
         End If
+
+        Dim names As String() = query.ToArray
 
         Return names
     End Function
